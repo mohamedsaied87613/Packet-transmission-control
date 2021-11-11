@@ -1,0 +1,113 @@
+include 'emu8086.inc'
+.model small
+.stack 256
+.data
+
+SIZE DW 0H
+MAX  DB 80H 
+PACKET  DW  1H  
+             
+MSG DB "ENTER A NUMBER: $"
+MSG1 DB "MOHAMED SAIED HASSAN 6162 $"
+MSG2 DB "PROJECT  2 $" 
+MSG3 DB "NUMBER OF Transmissions= $"
+
+.CODE          
+
+DEFINE_PRINT_NUM_UNS 
+DEFINE_SCAN_NUM    
+
+
+START: 
+
+;LOAD DATA SEG
+mov ax, @data 
+mov ds, ax
+MOV CX,0H
+
+;PRINT MSG2
+MOV AH, 09H
+LEA DX, MSG2
+INT 21H
+
+;new line
+MOV dl, 10
+MOV ah, 02h
+INT 21h
+MOV dl, 13
+MOV ah, 02h
+INT 21h     
+
+;PRINT MSG1
+MOV AH, 9
+LEA DX, MSG1
+INT 21H 
+
+;new line    
+MOV dl, 10
+MOV ah, 02h
+INT 21h
+MOV dl, 13
+MOV ah, 02h
+INT 21h
+
+;PRINT MSG
+MOV AH, 9
+LEA DX, MSG
+INT 21H 
+
+;SCAN THE SIZE OF THE FILE
+CALL   scan_num 
+MOV SIZE,CX
+MOV CX,0H
+
+;new line
+MOV dl, 10
+MOV ah, 02h
+INT 21h
+MOV dl, 13
+MOV ah, 02h
+INT 21h
+
+;INTIALIZE PACKET NUM AND WHEN IT BECOMES 128
+RESET:
+MOV PACKET,1H		
+             
+;CALCULATING THE PACKETS             
+LOOP:                      
+
+CMP SIZE,0H 
+JNG DONE              ;LMA EL FILE YTB3T KOLO
+
+CMP PACKET,128
+JZ  RESET              ;TEST PACKET==128
+CMP PACKET,64          ;TEST PACLET > OR < 64
+JB  LT                 ;CASE PACKET < 64
+
+;IF PACKET>=64  SIZE=SIZE-PACKET-1  C++
+MOV AX,PACKET
+SUB SIZE,AX                                   
+INC CX
+INC PACKET
+JMP LOOP
+
+;IF PACKET<64  SIZE=SIZE-PACKET*2  C++
+LT:   
+MOV AX,PACKET
+SUB SIZE,AX
+INC CX
+SHL PACKET,1H
+JMP LOOP
+
+
+;PRINTING THE NUMBER OF TRANSMISSIONS
+DONE:    
+MOV AH, 9
+LEA DX, MSG3
+INT 21H          
+mov ax,cx    
+call PRINT_NUM_UNS
+
+
+END START
+ 
